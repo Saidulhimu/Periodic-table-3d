@@ -7,8 +7,8 @@ An interactive, visually rich 3D representation of the chemical Periodic Table b
 
 ---
 
-## 📷 Screenshots & Demo
-![3D Periodic Table Demo](https://via.placeholder.com/800x400?text=3D+Periodic+Table+Screenshot)
+## 📷 Screenshot
+![3D Periodic Table Demo](./periodic.png)
 
 ---
 

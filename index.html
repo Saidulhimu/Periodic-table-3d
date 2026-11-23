@@ -3,9 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Interactive 3D Periodic Table of Elements built with Three.js, CSS3D, and Web Audio API. Explore elements in Table, Sphere, Helix, and Grid layouts with real-time Bohr atom models.">
-    <meta name="keywords" content="Periodic Table, 3D Periodic Table, Three.js, Chemistry, Elements, Bohr Model, Science Visualization">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="description"
+        content="Interactive 3D Periodic Table of Elements built with Three.js, CSS3D, and Web Audio API. Explore elements in Table, Sphere, Helix, and Grid layouts with real-time Bohr atom models.">
+    <meta name="keywords"
+        content="Periodic Table, 3D Periodic Table, Three.js, Chemistry, Elements, Bohr Model, Science Visualization">
     <meta name="author" content="Saidul Himu">
     <title>3D Periodic Table — Interactive Atomic Lattice</title>
     <link rel="icon" type="image/svg+xml" href="./images/gemini-svg.svg">
@@ -39,27 +41,28 @@
                     <path
                         d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                 </svg>
-                <input type="text" id="search-input" placeholder="Search element (e.g. Gold, Fe, 79)..." autocomplete="off"
-                    spellcheck="false" />
+                <input type="text" id="search-input" placeholder="Search element (e.g. Gold, Fe, 79)..."
+                    autocomplete="off" spellcheck="false" />
                 <button id="search-clear" class="search-clear" aria-label="Clear search" title="Clear search">✕</button>
                 <span id="search-count" class="search-count">118 / 118</span>
             </div>
 
             <!-- View Modes -->
             <div id="modes">
-                <button class="mode-btn active" data-mode="table" title="Standard 2D Periodic Table [1]"><span class="key-badge">1</span>Table</button>
-                <button class="mode-btn" data-mode="sphere" title="Fibonacci Spherical Layout [2]"><span class="key-badge">2</span>Sphere</button>
-                <button class="mode-btn" data-mode="helix" title="Double Helix Spiral [3]"><span class="key-badge">3</span>Helix</button>
-                <button class="mode-btn" data-mode="grid" title="5x5x5 Volumetric Cube Matrix [4]"><span class="key-badge">4</span>Grid</button>
+                <button class="mode-btn active" data-mode="table" title="Standard 2D Periodic Table [1]"><span
+                        class="key-badge">1</span>Table</button>
+                <button class="mode-btn" data-mode="sphere" title="Fibonacci Spherical Layout [2]"><span
+                        class="key-badge">2</span>Sphere</button>
+                <button class="mode-btn" data-mode="helix" title="Double Helix Spiral [3]"><span
+                        class="key-badge">3</span>Helix</button>
+                <button class="mode-btn" data-mode="grid" title="5x5x5 Volumetric Cube Matrix [4]"><span
+                        class="key-badge">4</span>Grid</button>
             </div>
 
             <!-- Quick Control Actions -->
             <div id="controls-bar">
-                <button id="btn-autorotate" class="ctrl-btn" title="Toggle 3D Auto-Rotation (Space)">
-                    <span class="icon">⟳</span> <span class="lbl">Rotate</span>
-                </button>
-                <button id="btn-reset" class="ctrl-btn" title="Reset Camera View (R)">
-                    <span class="icon">⌖</span> <span class="lbl">Reset</span>
+                <button id="btn-legend-toggle" class="ctrl-btn" title="Categories Filter">
+                    <span class="icon">🏷️</span> <span class="lbl">Filter</span>
                 </button>
                 <button id="btn-sound" class="ctrl-btn active" title="Toggle Sound FX (M)">
                     <span class="icon" id="sound-icon">🔊</span> <span class="lbl">Sound</span>
@@ -75,7 +78,10 @@
     <aside id="legend" aria-label="Chemical Categories Filter">
         <div class="legend-header">
             <span>Categories</span>
-            <button id="legend-reset" class="legend-reset" title="Show All Elements">Reset</button>
+            <div class="legend-actions">
+                <button id="legend-reset" class="legend-reset" title="Show All Elements">Reset</button>
+                <button id="legend-close" class="legend-close" title="Close Filter">✕</button>
+            </div>
         </div>
         <div id="legend-items"></div>
     </aside>
@@ -122,13 +128,14 @@
     <div id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="m-name">
         <div id="modal">
             <button class="close" id="modal-close-btn" aria-label="Close modal">✕</button>
-            
+
             <div class="modal-body">
                 <!-- Left: Chemical Data -->
                 <div class="modal-left">
                     <div class="tags-row">
                         <span class="cat-tag" id="m-cat">Category</span>
-                        <span class="phase-tag" id="m-phase"><span class="phase-dot"></span><span id="m-phase-text">Solid</span></span>
+                        <span class="phase-tag" id="m-phase"><span class="phase-dot"></span><span
+                                id="m-phase-text">Solid</span></span>
                     </div>
 
                     <div class="row">
@@ -144,8 +151,10 @@
                         <div class="fact"><label>Group (Col)</label><span id="m-col">1</span></div>
                         <div class="fact"><label>Period (Row)</label><span id="m-row">1</span></div>
                         <div class="fact"><label>Block</label><span id="m-block">s-block</span></div>
-                        <div class="fact fact-wide"><label>Electron Configuration</label><span id="m-config" class="mono-value">1s¹</span></div>
-                        <div class="fact fact-wide"><label>Shells (K, L, M...)</label><span id="m-shells" class="mono-value">1</span></div>
+                        <div class="fact fact-wide"><label>Electron Configuration</label><span id="m-config"
+                                class="mono-value">1s¹</span></div>
+                        <div class="fact fact-wide"><label>Shells (K, L, M...)</label><span id="m-shells"
+                                class="mono-value">1</span></div>
                     </div>
 
                     <div class="summary-box">

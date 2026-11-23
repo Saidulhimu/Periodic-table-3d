@@ -88,6 +88,10 @@ html, body {
   z-index: 1;
 }
 
+#stage.is-transforming .element {
+  pointer-events: none !important;
+}
+
 /* ======================================================================
    HUD (HEADS-UP DISPLAY)
    ====================================================================== */
@@ -329,6 +333,12 @@ html, body {
   color: var(--text-dim);
 }
 
+.legend-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .legend-reset {
   background: none;
   border: 1px solid rgba(43, 232, 255, 0.3);
@@ -343,6 +353,24 @@ html, body {
 
 .legend-reset:hover {
   background: rgba(43, 232, 255, 0.15);
+  border-color: var(--cyan);
+}
+
+.legend-close {
+  display: none;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+.legend-close:hover {
+  color: #fff;
   border-color: var(--cyan);
 }
 
@@ -981,31 +1009,161 @@ html, body {
 }
 
 /* ======================================================================
-   RESPONSIVE MEDIA QUERIES
+   RESPONSIVE DESIGN (DESKTOP, TABLET, MOBILE)
    ====================================================================== */
+
+/* Laptops & Tablets in Landscape (<= 1100px) */
+@media (max-width: 1100px) {
+  #hud { padding: 12px 18px; }
+  .search-box { min-width: 220px; }
+  .mode-btn { padding: 7px 11px; font-size: 10px; }
+  #legend { max-width: 280px; padding: 10px 12px; }
+}
+
+/* Tablets & Large Phones (<= 960px) */
 @media (max-width: 960px) {
+  .hud-top {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px 12px;
+  }
+  .brand { grid-column: 1; }
+  #controls-bar { grid-column: 2; justify-self: end; }
+
+  .search-box {
+    grid-column: 1 / -1;
+    min-width: 100%;
+    order: 2;
+  }
+
+  #modes {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    order: 3;
+    gap: 6px;
+  }
+
+  .mode-btn {
+    justify-content: center;
+    padding: 8px 6px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  /* Interactive Legend Drawer on Mobile & Tablet */
+  #legend {
+    left: 12px;
+    right: 12px;
+    bottom: 50px;
+    max-width: none;
+    max-height: 52vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: translateY(130%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform .28s cubic-bezier(.2, .9, .3, 1), opacity .22s ease;
+    z-index: 40;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.85), 0 0 25px rgba(43, 232, 255, 0.25);
+  }
+
+  #legend.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .legend-close {
+    display: inline-block;
+  }
+
+  #hint { display: none; }
+
+  /* Modal responsive on Tablet/Mobile */
+  #modal {
+    width: 92vw;
+    max-height: 88vh;
+    padding: 20px 18px;
+  }
+
   .modal-body {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
-  .modal-right {
-    margin-top: 10px;
-  }
+
   .canvas-wrap {
     width: 220px;
     height: 220px;
   }
+
   #bohr-canvas {
     width: 220px;
     height: 220px;
   }
 }
 
-@media (max-width: 768px) {
-  #hud { padding: 10px 14px; }
-  .hud-top { gap: 10px; }
-  .search-box { min-width: 100%; order: 3; }
-  #modes { flex-wrap: wrap; }
-  #legend { display: none; }
-  #hint { display: none; }
-  .footer-text { display: none; }
+/* Mobile Screens (<= 640px) */
+@media (max-width: 640px) {
+  #hud { padding: 10px 12px; }
+
+  #hud .brand h1 {
+    font-size: 16px;
+    letter-spacing: 0.08em;
+  }
+
+  #hud .brand p {
+    font-size: 9px;
+  }
+
+  .ctrl-btn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .ctrl-btn .lbl {
+    font-size: 10px;
+  }
+
+  .mode-btn .key-badge {
+    display: none;
+  }
+
+  #legend-items {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  /* Modal adjustments for small mobile screens */
+  #modal {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+
+  #modal .big-sym {
+    font-size: 44px;
+  }
+
+  #modal .m-name {
+    font-size: 18px;
+  }
+
+  #modal .facts {
+    gap: 8px 10px;
+    padding: 10px 0;
+  }
+
+  #modal .fact span {
+    font-size: 12px;
+  }
+
+  .footer-text {
+    display: none;
+  }
+
+  .footer-inner {
+    justify-content: center;
+    width: 100%;
+  }
 }

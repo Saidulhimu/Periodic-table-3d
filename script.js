@@ -1,12 +1,11 @@
 /* =========================================================================
    ATOMIC LATTICE — INTERACTIVE 3D PERIODIC TABLE
    Built with Three.js (CSS3DRenderer), Tween.js & Web Audio API
-   Optimized for High-FPS 3D Rendering & Interactive Learning
+   High-Speed Responsive 3D Physics & Interactive Learning
    ========================================================================= */
 
 /* =========================================================================
    1. ELEMENT DATASET (118 CHEMICAL ELEMENTS)
-   Schema: [atomicNumber, symbol, name, atomicMass, category, row, col, phase, block, electronConfig, shells, summary]
    ========================================================================= */
 const ELEMENTS = [
   [
@@ -2487,14 +2486,14 @@ class SoundEngine {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(220, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(640, this.ctx.currentTime + 0.18);
+      osc.frequency.setValueAtTime(260, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(680, this.ctx.currentTime + 0.14);
       gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.22);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.16);
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start();
-      osc.stop(this.ctx.currentTime + 0.22);
+      osc.stop(this.ctx.currentTime + 0.16);
     } catch (e) {}
   }
 
@@ -2508,13 +2507,13 @@ class SoundEngine {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.04);
-        gain.gain.setValueAtTime(0.05, now + idx * 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.25);
+        osc.frequency.setValueAtTime(freq, now + idx * 0.035);
+        gain.gain.setValueAtTime(0.05, now + idx * 0.035);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.035 + 0.22);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(now + idx * 0.04);
-        osc.stop(now + idx * 0.04 + 0.25);
+        osc.start(now + idx * 0.035);
+        osc.stop(now + idx * 0.035 + 0.22);
       });
     } catch (e) {}
   }
@@ -2523,14 +2522,30 @@ class SoundEngine {
 const sfx = new SoundEngine();
 
 /* =========================================================================
-   3. THREE.JS SCENE SETUP & OPTIMIZATION (CSS3DRenderer)
+   3. THREE.JS SCENE SETUP & RESPONSIVE CAMERA
    ========================================================================= */
 let camera, scene, renderer, controls;
 const objects = [];               // CSS3DObject instances
 const targets = { table: [], sphere: [], helix: [], grid: [] };
 let activeFilterCategory = null;
 let currentElementIndex = 0;
-let isAutoRotating = false;
+
+function getOptimalCameraDistance() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const aspect = width / height;
+
+  if (width < 480) {
+    return 5400; // Small mobile portrait: fits all 18 periodic table columns
+  } else if (width < 768) {
+    return 4400; // Large phones / small tablets
+  } else if (width < 1024) {
+    return 3500; // Tablet / iPad
+  } else if (aspect < 1.35) {
+    return 3200; // Narrow desktop
+  }
+  return 2800; // Standard 16:9 widescreen
+}
 
 init();
 animate();
@@ -2539,7 +2554,7 @@ function init() {
   const stage = document.getElementById('stage');
 
   camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);
-  camera.position.z = 2800;
+  camera.position.z = getOptimalCameraDistance();
 
   scene = new THREE.Scene();
 
@@ -2565,12 +2580,13 @@ function init() {
       <div class="mass">${mass}</div>
     `;
 
-    // High precision click vs drag detection
+    // Smart touch vs drag detection (handles finger taps reliably on mobile)
     let downX = 0, downY = 0;
     el.addEventListener('pointerdown', e => { downX = e.clientX; downY = e.clientY; });
     el.addEventListener('pointerup', e => {
       const dist = Math.hypot(e.clientX - downX, e.clientY - downY);
-      if (dist < 4) {
+      const maxThreshold = (e.pointerType === 'touch') ? 10 : 5;
+      if (dist < maxThreshold) {
         sfx.playModalOpen();
         openDetailByIndex(index);
       }
@@ -2590,15 +2606,17 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   stage.appendChild(renderer.domElement);
 
-  // Orbit controls with smooth damping
+  // Orbit controls with smooth damping & full mobile touch support
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.rotateSpeed = 0.6;
-  controls.minDistance = 500;
-  controls.maxDistance = 6000;
+  controls.minDistance = 400;
+  controls.maxDistance = 8000;
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
-  controls.autoRotate = false;
-  controls.autoRotateSpeed = 1.0;
+  controls.touches = {
+    ONE: THREE.TOUCH.ROTATE,
+    TWO: THREE.TOUCH.DOLLY_PAN
+  };
 
   window.addEventListener('resize', onWindowResize);
 
@@ -2659,25 +2677,35 @@ function computeAllTargets() {
 }
 
 /* =========================================================================
-   5. ANIMATED VIEW TRANSITIONS (TWEEN.JS)
+   5. ULTRA-FAST & SMOOTH VIEW TRANSITIONS (TWEEN.JS OPTIMIZED)
    ========================================================================= */
-function transform(targetArray, duration = 1600) {
+function transform(targetArray, baseDuration = 800) {
   TWEEN.removeAll();
   sfx.playWhoosh();
 
+  // Temporarily disable pointer events during motion for maximum FPS
+  const stage = document.getElementById('stage');
+  if (stage) stage.classList.add('is-transforming');
+
   objects.forEach((object, i) => {
     const target = targetArray[i];
+    // Snappy, organic duration between 650ms and 900ms
+    const itemDuration = Math.random() * 250 + 650;
 
     new TWEEN.Tween(object.position)
-      .to({ x: target.position.x, y: target.position.y, z: target.position.z }, Math.random() * duration + duration)
-      .easing(TWEEN.Easing.Exponential.InOut)
+      .to({ x: target.position.x, y: target.position.y, z: target.position.z }, itemDuration)
+      .easing(TWEEN.Easing.Cubic.InOut)
       .start();
 
     new TWEEN.Tween(object.rotation)
-      .to({ x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, Math.random() * duration + duration)
-      .easing(TWEEN.Easing.Exponential.InOut)
+      .to({ x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, itemDuration)
+      .easing(TWEEN.Easing.Cubic.InOut)
       .start();
   });
+
+  setTimeout(() => {
+    if (stage) stage.classList.remove('is-transforming');
+  }, 920);
 }
 
 function switchView(modeName) {
@@ -2685,7 +2713,7 @@ function switchView(modeName) {
   if (!btn) return;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  transform(targets[modeName], 1600);
+  transform(targets[modeName]);
 }
 
 function setupModes() {
@@ -2698,24 +2726,29 @@ function setupModes() {
 }
 
 /* =========================================================================
-   6. CONTROLS BAR (AUTO-ROTATE, RESET VIEW, SOUND, SHORTCUTS)
+   6. CONTROLS BAR (FILTER TOGGLE, SOUND, SHORTCUTS)
    ========================================================================= */
 function setupControlsBar() {
-  // Auto-rotate toggle
-  const rotateBtn = document.getElementById('btn-autorotate');
-  rotateBtn.addEventListener('click', () => {
-    sfx.playClick();
-    isAutoRotating = !isAutoRotating;
-    controls.autoRotate = isAutoRotating;
-    rotateBtn.classList.toggle('active', isAutoRotating);
-  });
+  // Filter toggle (especially for mobile/tablet drawer)
+  const legendToggle = document.getElementById('btn-legend-toggle');
+  const legend = document.getElementById('legend');
+  const legendClose = document.getElementById('legend-close');
 
-  // Reset Camera View
-  const resetBtn = document.getElementById('btn-reset');
-  resetBtn.addEventListener('click', () => {
-    sfx.playClick();
-    resetCamera();
-  });
+  if (legendToggle && legend) {
+    legendToggle.addEventListener('click', () => {
+      sfx.playClick();
+      legend.classList.toggle('open');
+      legendToggle.classList.toggle('active', legend.classList.contains('open'));
+    });
+  }
+
+  if (legendClose && legend) {
+    legendClose.addEventListener('click', () => {
+      sfx.playClick();
+      legend.classList.remove('open');
+      if (legendToggle) legendToggle.classList.remove('active');
+    });
+  }
 
   // Sound FX toggle
   const soundBtn = document.getElementById('btn-sound');
@@ -2749,13 +2782,14 @@ function setupControlsBar() {
 }
 
 function resetCamera() {
+  const targetZ = getOptimalCameraDistance();
   new TWEEN.Tween(camera.position)
-    .to({ x: 0, y: 0, z: 2800 }, 1000)
+    .to({ x: 0, y: 0, z: targetZ }, 800)
     .easing(TWEEN.Easing.Cubic.Out)
     .start();
 
   new TWEEN.Tween(controls.target)
-    .to({ x: 0, y: 0, z: 0 }, 1000)
+    .to({ x: 0, y: 0, z: 0 }, 800)
     .easing(TWEEN.Easing.Cubic.Out)
     .onUpdate(() => controls.update())
     .start();
@@ -2767,7 +2801,6 @@ function resetCamera() {
 function setupSearchAndFilters() {
   const searchInput = document.getElementById('search-input');
   const searchClear = document.getElementById('search-clear');
-  const searchCount = document.getElementById('search-count');
 
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.trim().toLowerCase();
@@ -2906,7 +2939,6 @@ function drawBohrModel(shells, color) {
   const centerX = w / 2;
   const centerY = h / 2;
 
-  // Max radius for outer shell
   const maxRadius = Math.min(centerX, centerY) - 18;
   const numShells = shells.length;
   const shellStep = maxRadius / (numShells + 1.2);
@@ -2941,8 +2973,8 @@ function drawBohrModel(shells, color) {
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Electrons on this shell
-      const speed = (shellIdx % 2 === 0 ? 1 : -1) * (0.012 / (shellIdx * 0.4 + 1));
+      // Rotating electrons
+      const speed = (shellIdx % 2 === 0 ? 1 : -1) * (0.014 / (shellIdx * 0.4 + 1));
       const currentOrbitAngle = bohrAngle * speed;
 
       for (let e = 0; e < electronCount; e++) {
@@ -2950,14 +2982,13 @@ function drawBohrModel(shells, color) {
         const ex = centerX + Math.cos(angle) * radius;
         const ey = centerY + Math.sin(angle) * radius;
 
-        // Electron glow
         ctx.fillStyle = color;
         ctx.shadowColor = color;
         ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.arc(ex, ey, 3.5, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0; // reset
+        ctx.shadowBlur = 0;
       }
     });
 
@@ -3055,13 +3086,16 @@ function closeDetail() {
    ========================================================================= */
 function setupKeyboardShortcuts() {
   window.addEventListener('keydown', e => {
-    // Do not intercept if user is typing in search input (except Escape)
     const searchInput = document.getElementById('search-input');
     const isSearching = document.activeElement === searchInput;
 
     if (e.key === 'Escape') {
       closeDetail();
       document.getElementById('shortcuts-overlay').classList.remove('open');
+      const legend = document.getElementById('legend');
+      if (legend) legend.classList.remove('open');
+      const legendToggle = document.getElementById('btn-legend-toggle');
+      if (legendToggle) legendToggle.classList.remove('active');
       if (searchInput.value) {
         searchInput.value = '';
         document.getElementById('search-clear').style.display = 'none';
@@ -3077,10 +3111,6 @@ function setupKeyboardShortcuts() {
     else if (e.key === '2') switchView('sphere');
     else if (e.key === '3') switchView('helix');
     else if (e.key === '4') switchView('grid');
-    else if (e.key === ' ') {
-      e.preventDefault();
-      document.getElementById('btn-autorotate').click();
-    }
     else if (e.key === 'r' || e.key === 'R') {
       resetCamera();
     }

@@ -4,11 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Periodic Table</title>
-    <link rel="icon" type="" href="./images/gemini-svg.svg">
+    <meta name="description" content="Interactive 3D Periodic Table of Elements built with Three.js, CSS3D, and Web Audio API. Explore elements in Table, Sphere, Helix, and Grid layouts with real-time Bohr atom models.">
+    <meta name="keywords" content="Periodic Table, 3D Periodic Table, Three.js, Chemistry, Elements, Bohr Model, Science Visualization">
+    <meta name="author" content="Saidul Himu">
+    <title>3D Periodic Table — Interactive Atomic Lattice</title>
+    <link rel="icon" type="image/svg+xml" href="./images/gemini-svg.svg">
 
-    <!-- Technical mono face for data + a display face for headings -->
+    <!-- Technical mono face for data + display face for headings -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
         rel="stylesheet">
@@ -22,21 +26,61 @@
     <div id="bg"></div>
 
     <!-- ============================== HUD ============================== -->
-    <div id="hud">
-        <div class="brand">
-            <h1>ATOMIC <span>LATTICE</span></h1>
-            <p><b>3D Periodic Table</b></p>
-        </div>
-        <div id="modes">
-            <button class="mode-btn active" data-mode="table">Table</button>
-            <button class="mode-btn" data-mode="sphere">Sphere</button>
-            <button class="mode-btn" data-mode="helix">Helix</button>
-            <button class="mode-btn" data-mode="grid">Grid</button>
-        </div>
-    </div>
+    <header id="hud">
+        <div class="hud-top">
+            <div class="brand">
+                <h1>ATOMIC <span>LATTICE</span></h1>
+                <p><b>3D Periodic Table</b></p>
+            </div>
 
-    <div id="legend"></div>
-    <div id="hint">Drag to rotate · Scroll to zoom · Click a card for details</div>
+            <!-- Real-time Element Search -->
+            <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                        d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                </svg>
+                <input type="text" id="search-input" placeholder="Search element (e.g. Gold, Fe, 79)..." autocomplete="off"
+                    spellcheck="false" />
+                <button id="search-clear" class="search-clear" aria-label="Clear search" title="Clear search">✕</button>
+                <span id="search-count" class="search-count">118 / 118</span>
+            </div>
+
+            <!-- View Modes -->
+            <div id="modes">
+                <button class="mode-btn active" data-mode="table" title="Standard 2D Periodic Table [1]"><span class="key-badge">1</span>Table</button>
+                <button class="mode-btn" data-mode="sphere" title="Fibonacci Spherical Layout [2]"><span class="key-badge">2</span>Sphere</button>
+                <button class="mode-btn" data-mode="helix" title="Double Helix Spiral [3]"><span class="key-badge">3</span>Helix</button>
+                <button class="mode-btn" data-mode="grid" title="5x5x5 Volumetric Cube Matrix [4]"><span class="key-badge">4</span>Grid</button>
+            </div>
+
+            <!-- Quick Control Actions -->
+            <div id="controls-bar">
+                <button id="btn-autorotate" class="ctrl-btn" title="Toggle 3D Auto-Rotation (Space)">
+                    <span class="icon">⟳</span> <span class="lbl">Rotate</span>
+                </button>
+                <button id="btn-reset" class="ctrl-btn" title="Reset Camera View (R)">
+                    <span class="icon">⌖</span> <span class="lbl">Reset</span>
+                </button>
+                <button id="btn-sound" class="ctrl-btn active" title="Toggle Sound FX (M)">
+                    <span class="icon" id="sound-icon">🔊</span> <span class="lbl">Sound</span>
+                </button>
+                <button id="btn-shortcuts" class="ctrl-btn" title="Keyboard Shortcuts (?)">
+                    <span class="icon">⌨</span> <span class="lbl">Keys</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Interactive Category Legend -->
+    <aside id="legend" aria-label="Chemical Categories Filter">
+        <div class="legend-header">
+            <span>Categories</span>
+            <button id="legend-reset" class="legend-reset" title="Show All Elements">Reset</button>
+        </div>
+        <div id="legend-items"></div>
+    </aside>
+
+    <div id="hint">Drag to rotate · Scroll to zoom · Click card for 3D Bohr Model · Press <kbd>/</kbd> to search</div>
 
     <!-- ============================ FOOTER ============================ -->
     <footer id="site-footer">
@@ -49,11 +93,11 @@
                 <ellipse class="orbit orbit-3" cx="30" cy="30" rx="26" ry="10"></ellipse>
             </svg>
 
-            <span class="footer-text">Atomic Lattice — built by Saidul Himu</span>
+            <span class="footer-text">Atomic Lattice — Interactive 3D Periodic Table · Built by Saidul Himu</span>
 
             <div class="footer-links">
                 <a class="footer-link" href="mailto:saidulhimuu@gmail.com">
-                    <svg viewBox="0 0 24 24" class="icon">
+                    <svg viewBox="0 0 24 24" class="icon" aria-hidden="true">
                         <path
                             d="M2 5.5A2.5 2.5 0 0 1 4.5 3h15A2.5 2.5 0 0 1 22 5.5v13a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 18.5v-13Zm2.2.3 7.4 5.9a.8.8 0 0 0 1 0l7.4-5.9a.6.6 0 0 0-.4-.8H4.6a.6.6 0 0 0-.4.8Z" />
                     </svg>
@@ -61,7 +105,7 @@
                 </a>
                 <span class="footer-sep">·</span>
                 <a class="footer-link" href="https://github.com/Saidulhimu" target="_blank" rel="noopener noreferrer">
-                    <svg viewBox="0 0 24 24" class="icon">
+                    <svg viewBox="0 0 24 24" class="icon" aria-hidden="true">
                         <path
                             d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.95 0-1.1.39-2 1.03-2.7-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.4 9.4 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.7 0 3.85-2.34 4.7-4.57 4.94.36.31.68.92.68 1.85v2.75c0 .26.18.58.69.48A10 10 0 0 0 12 2Z" />
                     </svg>
@@ -72,25 +116,86 @@
     </footer>
 
     <!-- ============================ 3D STAGE ============================ -->
-    <div id="stage"></div>
+    <main id="stage" aria-label="3D Periodic Table Canvas"></main>
 
-    <!-- ============================ DETAIL MODAL ============================ -->
-    <div id="modal-overlay">
+    <!-- ============================ ENHANCED DETAIL MODAL ============================ -->
+    <div id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="m-name">
         <div id="modal">
-            <button class="close" aria-label="Close">✕</button>
-            <span class="cat-tag" id="m-cat">Category</span>
-            <div class="row">
-                <div class="big-sym" id="m-sym">H</div>
-                <div class="name-num">
-                    <div class="m-name" id="m-name">Hydrogen</div>
-                    <div class="m-num" id="m-num">Element 1</div>
+            <button class="close" id="modal-close-btn" aria-label="Close modal">✕</button>
+            
+            <div class="modal-body">
+                <!-- Left: Chemical Data -->
+                <div class="modal-left">
+                    <div class="tags-row">
+                        <span class="cat-tag" id="m-cat">Category</span>
+                        <span class="phase-tag" id="m-phase"><span class="phase-dot"></span><span id="m-phase-text">Solid</span></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="big-sym" id="m-sym">H</div>
+                        <div class="name-num">
+                            <h2 class="m-name" id="m-name">Hydrogen</h2>
+                            <div class="m-num" id="m-num">Element #1</div>
+                        </div>
+                    </div>
+
+                    <div class="facts">
+                        <div class="fact"><label>Atomic Mass</label><span id="m-mass">1.008</span></div>
+                        <div class="fact"><label>Group (Col)</label><span id="m-col">1</span></div>
+                        <div class="fact"><label>Period (Row)</label><span id="m-row">1</span></div>
+                        <div class="fact"><label>Block</label><span id="m-block">s-block</span></div>
+                        <div class="fact fact-wide"><label>Electron Configuration</label><span id="m-config" class="mono-value">1s¹</span></div>
+                        <div class="fact fact-wide"><label>Shells (K, L, M...)</label><span id="m-shells" class="mono-value">1</span></div>
+                    </div>
+
+                    <div class="summary-box">
+                        <label>Description & Occurrence</label>
+                        <p id="m-summary">Lightest and most abundant chemical element in the universe.</p>
+                    </div>
+
+                    <!-- Previous & Next Navigation -->
+                    <div class="modal-nav">
+                        <button id="m-prev" class="nav-btn" title="Previous Element (Left Arrow)">◀ Prev</button>
+                        <span class="nav-counter" id="m-counter">1 of 118</span>
+                        <button id="m-next" class="nav-btn" title="Next Element (Right Arrow)">Next ▶</button>
+                    </div>
+                </div>
+
+                <!-- Right: Animated Bohr Orbit Atom Model -->
+                <div class="modal-right">
+                    <div class="bohr-card">
+                        <div class="bohr-header">
+                            <span class="bohr-title">Bohr Atomic Model</span>
+                            <span class="bohr-sub">Dynamic Shell Simulator</span>
+                        </div>
+                        <div class="canvas-wrap">
+                            <canvas id="bohr-canvas" width="260" height="260"></canvas>
+                        </div>
+                        <div class="shell-breakdown" id="shell-breakdown">
+                            <!-- Injected dynamically via script.js -->
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="facts">
-                <div class="fact"><label>Atomic Mass</label><span id="m-mass">1.008</span></div>
-                <div class="fact"><label>Category</label><span id="m-cat2">Nonmetal</span></div>
-                <div class="fact"><label>Period (Row)</label><span id="m-row">1</span></div>
-                <div class="fact"><label>Group (Column)</label><span id="m-col">1</span></div>
+        </div>
+    </div>
+
+    <!-- ============================ SHORTCUTS MODAL ============================ -->
+    <div id="shortcuts-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+        <div id="shortcuts-modal">
+            <button class="close" id="shortcuts-close-btn" aria-label="Close shortcuts modal">✕</button>
+            <h3 id="shortcuts-title">Keyboard Shortcuts</h3>
+            <div class="shortcuts-grid">
+                <div class="shortcut-item"><kbd>1</kbd><span>Table View</span></div>
+                <div class="shortcut-item"><kbd>2</kbd><span>Sphere View</span></div>
+                <div class="shortcut-item"><kbd>3</kbd><span>Helix View</span></div>
+                <div class="shortcut-item"><kbd>4</kbd><span>Grid View</span></div>
+                <div class="shortcut-item"><kbd>/</kbd> or <kbd>Ctrl+K</kbd><span>Focus Search</span></div>
+                <div class="shortcut-item"><kbd>Space</kbd><span>Toggle 3D Auto-Rotate</span></div>
+                <div class="shortcut-item"><kbd>R</kbd><span>Reset Camera View</span></div>
+                <div class="shortcut-item"><kbd>M</kbd><span>Toggle Sound Effects</span></div>
+                <div class="shortcut-item"><kbd>Esc</kbd><span>Close Modals / Clear Search</span></div>
+                <div class="shortcut-item"><kbd>◀</kbd> <kbd>▶</kbd><span>Navigate Elements in Modal</span></div>
             </div>
         </div>
     </div>
